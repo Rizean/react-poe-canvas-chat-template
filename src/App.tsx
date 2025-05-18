@@ -6,10 +6,12 @@ import Footer from './components/layout/Footer';
 import Sidebar from './components/layout/Sidebar';
 import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
-import { useAppContext } from './context/AppContext'; // Import useAppContext
+import TextGeneratorPage from './pages/TextGeneratorPage';
+import MediaGeneratorPage from './pages/MediaGeneratorPage';
+import { useAppContext } from './context/AppContext';
 
 // Define Page types for navigation state
-export type PageName = 'home' | 'chat';
+export type PageName = 'home' | 'chat' | 'textGenerator' | 'mediaGenerator'; // Added new page names
 
 const AppContainer = styled.div`
     display: flex;
@@ -65,7 +67,7 @@ const SidebarOverlay = styled.div`
 function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [currentPage, setCurrentPage] = useState<PageName>('home');
-    const { logger } = useAppContext(); // Get loadAppSettings and logger
+    const { logger } = useAppContext();
 
 
     const toggleSidebar = () => {
@@ -76,10 +78,6 @@ function App() {
     const navigateTo = useCallback((page: PageName) => {
         setCurrentPage(page);
         logger.info(`App: Navigated to ${page} page.`);
-        // Optional: Close sidebar on navigation if it's an overlay
-        // if (isSidebarOpen) {
-        //     setIsSidebarOpen(false);
-        // }
     }, [logger]);
 
     const renderPage = () => {
@@ -88,6 +86,10 @@ function App() {
                 return <HomePage navigateTo={navigateTo} />;
             case 'chat':
                 return <ChatPage />;
+            case 'textGenerator': // Added
+                return <TextGeneratorPage />;
+            case 'mediaGenerator': // Added
+                return <MediaGeneratorPage />;
             default:
                 logger.warn(`App: Unknown page "${currentPage}", defaulting to home.`);
                 return <HomePage navigateTo={navigateTo} />;

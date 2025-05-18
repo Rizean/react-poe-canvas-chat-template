@@ -8,24 +8,40 @@ import {
     type RequestState as PoeRequestState,
     useLogger,
     usePoeAi,
-    saveDataToFile, // Import storage utils
+    saveDataToFile,
     loadDataFromFile,
     type VersionedData,
     type StorageLoadOptions,
-    tryCatchSync, // Import tryCatch
+    tryCatchSync,
     type Result
 } from '@rizean/poe-canvas-utils';
-import { useCustomTheme } from './ThemeContext'; // Import theme context hook
+import { useCustomTheme } from './ThemeContext';
+
+// --- App Settings Configuration ---
+const DEFAULT_CHAT_MODEL_NAME = 'Gemini-2.5-Pro-Exp'; // Renamed for clarity
+const DEFAULT_TEXT_GEN_MODEL_NAME = 'Gemini-2.5-Flash-Preview';
+const DEFAULT_MEDIA_GEN_MODEL_NAME = 'FLUX-schnell';
 
 // Define the structure for persisted application settings
-interface AppSettingsData extends VersionedData {
-    version: 1; // Current version of the settings structure
+interface AppSettingsDataV1 extends VersionedData { // Previous version
+    version: 1;
     themeMode: 'light' | 'dark';
     filterGemini: boolean;
-    aiModel: string;
+    aiModel: string; // This was for the general chat
 }
-const APP_SETTINGS_VERSION = 1;
+
+interface AppSettingsDataV2 extends VersionedData { // Current version
+    version: 2;
+    themeMode: 'light' | 'dark';
+    filterGemini: boolean;
+    chatModel: string; // Renamed for clarity
+    textGeneratorModel: string; // New
+    mediaGeneratorModel: string; // New
+}
+
+const APP_SETTINGS_CURRENT_VERSION = 2; // Incremented version
 const APP_SETTINGS_FILENAME = 'chat-app-settings.json';
+
 
 interface AppContextType {
     messages: Message[];
@@ -34,28 +50,37 @@ interface AppContextType {
     isLoading: boolean;
     error: AppError | null;
     clearError: () => void;
-    selectedModel: string;
-    setSelectedModel: (modelName: string) => void;
+    selectedChatModel: string; // Renamed
+    setSelectedChatModel: (modelName: string) => void; // Renamed
+    selectedTextGeneratorModel: string; // New
+    setSelectedTextGeneratorModel: (modelName: string) => void; // New
+    selectedMediaGeneratorModel: string; // New
+    setSelectedMediaGeneratorModel: (modelName: string) => void; // New
     sendChatMessage: (text: string) => Promise<void>;
     logger: ReturnType<typeof useLogger>['logger'];
     filterGeminiThinking: boolean;
     setFilterGeminiThinking: (value: boolean) => void;
-    saveAppSettings: () => void; // New function
-    loadAppSettings: () => Promise<void>; // New function
+    saveAppSettings: () => void;
+    loadAppSettings: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-const DEFAULT_MODEL_NAME = 'Gemini-2.5-Pro-Exp';
+
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<AppError | null>(null);
-    const [selectedModel, setSelectedModel] = useState<string>(DEFAULT_MODEL_NAME);
+
+    // Model states
+    const [selectedChatModel, setSelectedChatModelInternal] = useState<string>(DEFAULT_CHAT_MODEL_NAME);
+    const [selectedTextGeneratorModel, setSelectedTextGeneratorModelInternal] = useState<string>(DEFAULT_TEXT_GEN_MODEL_NAME);
+    const [selectedMediaGeneratorModel, setSelectedMediaGeneratorModelInternal] = useState<string>(DEFAULT_MEDIA_GEN_MODEL_NAME);
+
     const [filterGeminiThinking, setFilterGeminiThinking] = useState<boolean>(false);
 
-    const { themeMode, setThemeMode } = useCustomTheme(); // Get themeMode and setThemeMode
-    const {logger: appLogger} = useLogger(import.meta.env.VITE_LOG_LEVEL || 'info'); // Renamed to avoid conflict
+    const { themeMode, setThemeMode } = useCustomTheme();
+    const {logger: appLogger} = useLogger(import.meta.env.VITE_LOG_LEVEL || 'info');
 
     const [sendToPoe] = usePoeAi({logger: appLogger, simulation: !window.Poe});
 
@@ -80,10 +105,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
         appLogger.debug(`AppContext: Message updated - ID: ${id}`, updates);
     }, [appLogger]);
 
-    const handleSetSelectedModel = useCallback((modelName: string) => {
-        setSelectedModel(modelName);
-        appLogger.info('AppContext: AI Model changed to', modelName);
+    // --- Model Setters ---
+    const handleSetSelectedChatModel = useCallback((modelName: string) => {
+        setSelectedChatModelInternal(modelName);
+        appLogger.info('AppContext: Chat AI Model changed to', modelName);
     }, [appLogger]);
+
+    const handleSetSelectedTextGeneratorModel = useCallback((modelName: string) => {
+        setSelectedTextGeneratorModelInternal(modelName);
+        appLogger.info('AppContext: Text Generator AI Model changed to', modelName);
+    }, [appLogger]);
+
+    const handleSetSelectedMediaGeneratorModel = useCallback((modelName: string) => {
+        setSelectedMediaGeneratorModelInternal(modelName);
+        appLogger.info('AppContext: Media Generator AI Model changed to', modelName);
+    }, [appLogger]);
+
 
     const handleSetFilterGeminiThinking = useCallback((value: boolean) => {
         setFilterGeminiThinking(value);
@@ -93,68 +130,77 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
     // --- App Settings Persistence ---
     const saveAppSettings = useCallback(() => {
         appLogger.info('AppContext: Attempting to save app settings.');
-        const settingsToSave: AppSettingsData = {
-            version: APP_SETTINGS_VERSION,
+        const settingsToSave: AppSettingsDataV2 = { // Save as current version V2
+            version: APP_SETTINGS_CURRENT_VERSION,
             themeMode,
             filterGemini: filterGeminiThinking,
-            aiModel: selectedModel,
+            chatModel: selectedChatModel,
+            textGeneratorModel: selectedTextGeneratorModel,
+            mediaGeneratorModel: selectedMediaGeneratorModel,
         };
         const [success, saveError] = saveDataToFile(APP_SETTINGS_FILENAME, settingsToSave);
         if (success) {
             appLogger.info('AppContext: App settings saved successfully.');
-            // Optionally show a success message to the user via a toast or status update
         } else {
             appLogger.error('AppContext: Failed to save app settings.', saveError);
             setError({ message: 'Failed to save settings.', details: saveError?.message });
         }
-    }, [themeMode, filterGeminiThinking, selectedModel, appLogger]);
+    }, [themeMode, filterGeminiThinking, selectedChatModel, selectedTextGeneratorModel, selectedMediaGeneratorModel, appLogger]);
 
     const loadAppSettings = useCallback(async () => {
         appLogger.info('AppContext: Attempting to load app settings.');
-        const loadOptions: StorageLoadOptions<AppSettingsData> = {
-            currentVersion: APP_SETTINGS_VERSION,
-            // No migration needed for V1, but you could add it here for future versions
-            migrate: async (loadedData: unknown, loadedVersion: number) => {
-                appLogger.warn(`AppContext: Migration needed from v${loadedVersion} to v${APP_SETTINGS_VERSION}. No migration path defined for this version.`);
-                // For this example, we'll just reject old versions if no explicit migration
-                if (loadedVersion < APP_SETTINGS_VERSION) {
-                    throw new Error(`Cannot migrate from unsupported version ${loadedVersion}`);
+        const loadOptions: StorageLoadOptions<AppSettingsDataV2> = { // Expecting V2
+            currentVersion: APP_SETTINGS_CURRENT_VERSION,
+            migrate: async (loadedUntypedData: unknown, loadedVersion: number): Promise<AppSettingsDataV2> => {
+                appLogger.info(`AppContext: Migrating settings from v${loadedVersion} to v${APP_SETTINGS_CURRENT_VERSION}.`);
+                if (loadedVersion === 1) {
+                    const oldData = loadedUntypedData as AppSettingsDataV1;
+                    return {
+                        version: APP_SETTINGS_CURRENT_VERSION,
+                        themeMode: oldData.themeMode,
+                        filterGemini: oldData.filterGemini,
+                        chatModel: oldData.aiModel, // Map old aiModel to chatModel
+                        textGeneratorModel: DEFAULT_TEXT_GEN_MODEL_NAME, // Initialize new field
+                        mediaGeneratorModel: DEFAULT_MEDIA_GEN_MODEL_NAME, // Initialize new field
+                    };
                 }
-                // If loadedVersion === APP_SETTINGS_VERSION, it shouldn't hit migrate, but as a safeguard:
-                return loadedData as AppSettingsData;
+                // Add more migration paths here if future versions are introduced
+                throw new Error(`Migration from version ${loadedVersion} to ${APP_SETTINGS_CURRENT_VERSION} not supported.`);
             },
-            validate: (dataToValidate: AppSettingsData) => {
+            validate: (dataToValidate: AppSettingsDataV2) => {
                 const isValid =
                     typeof dataToValidate.themeMode === 'string' &&
                     (dataToValidate.themeMode === 'light' || dataToValidate.themeMode === 'dark') &&
                     typeof dataToValidate.filterGemini === 'boolean' &&
-                    typeof dataToValidate.aiModel === 'string' && dataToValidate.aiModel.length > 0;
+                    typeof dataToValidate.chatModel === 'string' && dataToValidate.chatModel.length > 0 &&
+                    typeof dataToValidate.textGeneratorModel === 'string' && dataToValidate.textGeneratorModel.length > 0 &&
+                    typeof dataToValidate.mediaGeneratorModel === 'string' && dataToValidate.mediaGeneratorModel.length > 0;
                 if (!isValid) appLogger.warn('AppContext: Loaded settings failed validation.', dataToValidate);
                 return isValid;
             },
         };
 
-        const [loadedSettings, loadError]: Result<AppSettingsData | null, Error | null> = await loadDataFromFile<AppSettingsData>(loadOptions);
+        const [loadedSettings, loadError]: Result<AppSettingsDataV2 | null, Error | null> = await loadDataFromFile<AppSettingsDataV2>(loadOptions);
 
         if (loadError) {
             appLogger.error('AppContext: Failed to load app settings.', loadError);
             setError({ message: 'Failed to load settings.', details: loadError.message });
         } else if (loadedSettings) {
             appLogger.info('AppContext: App settings loaded successfully.', loadedSettings);
-            setThemeMode(loadedSettings.themeMode); // Update theme via ThemeContext
+            setThemeMode(loadedSettings.themeMode);
             setFilterGeminiThinking(loadedSettings.filterGemini);
-            setSelectedModel(loadedSettings.aiModel);
-            // Optionally show a success message
+            setSelectedChatModelInternal(loadedSettings.chatModel);
+            setSelectedTextGeneratorModelInternal(loadedSettings.textGeneratorModel);
+            setSelectedMediaGeneratorModelInternal(loadedSettings.mediaGeneratorModel);
         } else {
             appLogger.info('AppContext: No app settings file selected or file was empty.');
-            // No error, but no settings loaded (e.g., user cancelled dialog)
         }
     }, [appLogger, setThemeMode]);
 
 
     const sendChatMessage = useCallback(async (text: string) => {
-        if (!selectedModel) {
-            const errMsg = 'No AI model specified.';
+        if (!selectedChatModel) { // Use selectedChatModel here
+            const errMsg = 'No AI model specified for chat.';
             setError({message: errMsg});
             appLogger.warn(`sendChatMessage: ${errMsg}`);
             return;
@@ -177,7 +223,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
         });
         appLogger.info(`AI placeholder created: ${aiMessagePlaceholder.id}`);
 
-        const prompt = constructExampleChatPrompt(text, selectedModel);
+        const prompt = constructExampleChatPrompt(text, selectedChatModel); // Use selectedChatModel
 
         sendToPoe(prompt, (poeState: PoeRequestState) => {
             appLogger.debug(`PoeAI callback for ${aiMessagePlaceholder.id}:`, poeState);
@@ -186,12 +232,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
             let processedContent = rawContent;
 
             if (filterGeminiThinking) {
-                // Use tryCatchSync for the filter operation
                 const [filtered, filterError] = tryCatchSync(() => applyGeminiThinkingFilter(rawContent));
                 if (filterError) {
                     appLogger.error('Error applying Gemini filter:', filterError);
-                    // Fallback to raw content or handle error appropriately
-                    processedContent = rawContent; // Or show an error in the message
+                    processedContent = rawContent;
                 } else {
                     processedContent = filtered;
                 }
@@ -212,7 +256,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
             }
         }, {stream: true});
 
-    }, [selectedModel, addMessage, updateMessage, sendToPoe, clearError, appLogger, filterGeminiThinking]);
+    }, [selectedChatModel, addMessage, updateMessage, sendToPoe, clearError, appLogger, filterGeminiThinking]);
 
 
     const contextValue = useMemo(() => ({
@@ -222,8 +266,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
         isLoading,
         error,
         clearError,
-        selectedModel,
-        setSelectedModel: handleSetSelectedModel,
+        selectedChatModel, // Renamed
+        setSelectedChatModel: handleSetSelectedChatModel, // Renamed
+        selectedTextGeneratorModel, // New
+        setSelectedTextGeneratorModel: handleSetSelectedTextGeneratorModel, // New
+        selectedMediaGeneratorModel, // New
+        setSelectedMediaGeneratorModel: handleSetSelectedMediaGeneratorModel, // New
         sendChatMessage,
         logger: appLogger,
         filterGeminiThinking,
@@ -231,20 +279,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
         saveAppSettings,
         loadAppSettings,
     }), [
-        messages,
-        addMessage,
-        updateMessage,
-        isLoading,
-        error,
-        clearError,
-        selectedModel,
-        handleSetSelectedModel,
-        sendChatMessage,
-        appLogger,
-        filterGeminiThinking,
-        handleSetFilterGeminiThinking,
-        saveAppSettings,
-        loadAppSettings,
+        messages, addMessage, updateMessage, isLoading, error, clearError,
+        selectedChatModel, handleSetSelectedChatModel,
+        selectedTextGeneratorModel, handleSetSelectedTextGeneratorModel,
+        selectedMediaGeneratorModel, handleSetSelectedMediaGeneratorModel,
+        sendChatMessage, appLogger, filterGeminiThinking, handleSetFilterGeminiThinking,
+        saveAppSettings, loadAppSettings,
     ]);
 
     return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

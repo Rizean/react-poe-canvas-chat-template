@@ -10,12 +10,12 @@ const SelectorBar = styled.div`
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    flex-wrap: wrap;
 `;
 
 const SelectorLabel = styled.label`
     margin-right: 0.5rem;
-    margin-bottom: 0; /* Reset margin for flex alignment */
+    margin-bottom: 0;
     font-weight: bold;
     color: ${({ theme }) => theme.modelSelectorText};
     white-space: nowrap;
@@ -29,82 +29,79 @@ const StyledInput = styled.input`
     background-color: ${({ theme }) => theme.modelSelectorBg};
     border: 1px solid ${({ theme }) => theme.modelSelectorBorder};
     border-radius: 0.25rem;
-    flex-grow: 1; /* Allow input to take available space */
-    min-width: 150px; /* Minimum width before shrinking too much */
-    max-width: 300px; /* Max width */
+    flex-grow: 1;
+    min-width: 150px;
+    max-width: 300px;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:focus {
         border-color: ${({ theme }) => theme.primary};
         outline: 0;
-        box-shadow: 0 0 0 0.2rem ${({ theme }) => theme.primary}33; /* Primary color with alpha */
+        box-shadow: 0 0 0 0.2rem ${({ theme }) => theme.primary}33;
     }
 
     @media (max-width: 768px) {
         max-width: 200px;
-        margin-bottom: 0.5rem; /* Add some space if it wraps */
+        margin-bottom: 0.5rem;
     }
 `;
 
 const CheckboxWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  margin-left: 1rem;
-  white-space: nowrap;
+    display: flex;
+    align-items: center;
+    margin-left: 1rem;
+    white-space: nowrap;
 
-  @media (max-width: 768px) {
-    margin-left: 0; /* Align left if wrapped */
-    margin-top: 0.5rem; /* Space from input if wrapped */
-    width: 100%; /* Take full width if wrapped */
-  }
+    @media (max-width: 768px) {
+        margin-left: 0;
+        margin-top: 0.5rem;
+        width: 100%;
+    }
 `;
 
 const StyledCheckbox = styled.input`
-  margin-right: 0.5rem;
-  cursor: pointer;
-  /* Custom styling for checkbox can be added here if needed */
-  width: 1rem;
-  height: 1rem;
+    margin-right: 0.5rem;
+    cursor: pointer;
+    width: 1rem;
+    height: 1rem;
 `;
 
 const CheckboxLabel = styled.label`
-  color: ${({ theme }) => theme.modelSelectorText};
-  font-size: 0.9rem;
-  margin-bottom: 0;
-  cursor: pointer;
-  user-select: none; /* Prevent text selection on click */
+    color: ${({ theme }) => theme.modelSelectorText};
+    font-size: 0.9rem;
+    margin-bottom: 0;
+    cursor: pointer;
+    user-select: none;
 `;
 
 const ModelSelector: React.FC = () => {
     const {
-        selectedModel,
-        setSelectedModel,
+        selectedChatModel, // Renamed
+        setSelectedChatModel, // Renamed
         filterGeminiThinking,
         setFilterGeminiThinking,
     } = useAppContext();
 
     const handleModelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const modelName = event.target.value;
-        setSelectedModel(modelName);
-        // Logger message is now in AppContext's setSelectedModel
+        setSelectedChatModel(modelName); // Use renamed setter
     };
 
     const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const isChecked = event.target.checked;
         setFilterGeminiThinking(isChecked);
-        // Logger message is now in AppContext's setFilterGeminiThinking
     };
 
     return (
         <SelectorBar>
-            <SelectorLabel htmlFor="aiModelInput">AI Model:</SelectorLabel>
+            <SelectorLabel htmlFor="aiModelInput">AI Model (Basic Chat):</SelectorLabel>
             <StyledInput
                 type="text"
                 id="aiModelInput"
-                value={selectedModel}
+                value={selectedChatModel} // Use renamed state variable
                 onChange={handleModelChange}
                 placeholder="Enter AI model name (e.g., Gemini-2.5-Pro-Exp)"
-                aria-label="AI Model Name Input"
+                aria-label="AI Model Name Input for Basic Chat"
             />
             <CheckboxWrapper>
                 <StyledCheckbox

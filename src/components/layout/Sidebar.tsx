@@ -1,6 +1,6 @@
 // src/components/layout/Sidebar.tsx
 import styled, { css } from 'styled-components';
-import { FaHome, FaRocketchat } from 'react-icons/fa';
+import { FaHome, FaRocketchat, FaEdit, FaImage } from 'react-icons/fa'; // Added FaEdit, FaImage
 import type { PageName } from '../../App';
 
 interface SidebarProps {
@@ -17,13 +17,13 @@ interface SidebarWrapperProps {
 const SidebarWrapper = styled.aside<SidebarWrapperProps>`
     background-color: ${({theme}) => theme.sidebarBg};
     color: ${({theme}) => theme.sidebarText};
-    transition: transform 0.3s ease, width 0.3s ease; // Keep width transition if using collapsed width
+    transition: transform 0.3s ease, width 0.3s ease;
     flex-shrink: 0;
     overflow-x: hidden;
     overflow-y: auto;
     padding-top: 1rem;
 
-    position: fixed; // Always fixed for overlay-style behavior
+    position: fixed;
     left: 0;
     top: ${({theme}) => theme.headerHeight};
     height: calc(100% - ${({theme}) => theme.headerHeight});
@@ -40,16 +40,15 @@ const NavList = styled.nav`
 
 interface StyledNavButtonProps {
     $isActive: boolean;
-    $isSidebarOpen?: boolean; // To control text display
+    $isSidebarOpen?: boolean;
 }
 
-// Changed from NavLink to a button or div
 const StyledNavButton = styled.button<StyledNavButtonProps>`
     background-color: transparent;
     border: none;
     cursor: pointer;
-    width: 100%; // Make it take full width for click area
-    text-align: left; // Align text to left
+    width: 100%;
+    text-align: left;
 
     color: ${({ theme }) => theme.sidebarText};
     padding: 0.75rem 1rem;
@@ -69,10 +68,10 @@ const StyledNavButton = styled.button<StyledNavButtonProps>`
     ${({ $isActive, theme }) =>
             $isActive &&
             css`
-            background-color: ${theme.sidebarLinkActiveBg};
-            color: ${theme.sidebarLinkActiveText};
-            font-weight: bold;
-        `}
+                background-color: ${theme.sidebarLinkActiveBg};
+                color: ${theme.sidebarLinkActiveText};
+                font-weight: bold;
+            `}
 
     svg {
         flex-shrink: 0;
@@ -88,21 +87,18 @@ const StyledNavButton = styled.button<StyledNavButtonProps>`
         display: ${({ $isSidebarOpen }) => ($isSidebarOpen ? 'inline' : 'none')};
     }
 
-    /* Center icon when collapsed (if sidebarWidthCollapsed is used and $isSidebarOpen is false) */
-    ${({ $isSidebarOpen, theme }) =>
+    ${({ $isSidebarOpen }) =>
             !$isSidebarOpen &&
             css`
-            justify-content: center;
-            /* This padding logic might need adjustment if not using sidebarWidthCollapsed for this mode */
-            /* padding: 0.75rem ${parseInt(theme.sidebarWidthCollapsed) / 2 - 18 / 2}px; */
-        `}
+                justify-content: center;
+            `}
 `;
 
 
 function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProps) {
     const handleLinkClick = (page: PageName) => {
         navigateTo(page);
-        if (isOpen) {
+        if (isOpen) { // Only toggle if it's an overlay-style sidebar
             toggleSidebar();
         }
     };
@@ -125,10 +121,28 @@ function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProp
                     onClick={() => handleLinkClick('chat')}
                     $isActive={currentPage === 'chat'}
                     $isSidebarOpen={showText}
-                    aria-label="Go to Chat page"
+                    aria-label="Go to Basic Chat page"
                 >
                     <FaRocketchat />
-                    <span>Chat</span>
+                    <span>Basic Chat</span>
+                </StyledNavButton>
+                <StyledNavButton
+                    onClick={() => handleLinkClick('textGenerator')}
+                    $isActive={currentPage === 'textGenerator'}
+                    $isSidebarOpen={showText}
+                    aria-label="Go to Text Generator Chat"
+                >
+                    <FaEdit />
+                    <span>Text Generator</span>
+                </StyledNavButton>
+                <StyledNavButton
+                    onClick={() => handleLinkClick('mediaGenerator')}
+                    $isActive={currentPage === 'mediaGenerator'}
+                    $isSidebarOpen={showText}
+                    aria-label="Go to Media Generator Chat"
+                >
+                    <FaImage />
+                    <span>Media Generator</span>
                 </StyledNavButton>
             </NavList>
         </SidebarWrapper>
