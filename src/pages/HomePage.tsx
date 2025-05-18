@@ -1,24 +1,24 @@
 // src/pages/HomePage.tsx
 import React from 'react';
 import styled from 'styled-components';
-import type { PageName } from '../App';
+import type {PageName} from '../App';
 
 const HomePageContainer = styled.div`
     margin: 2rem;
     padding: 2rem;
-    background-color: ${({ theme }) => theme.cardBg};
-    color: ${({ theme }) => theme.text};
-    border: 1px solid ${({ theme }) => theme.border};
+    background-color: ${({theme}) => theme.cardBg};
+    color: ${({theme}) => theme.text};
+    border: 1px solid ${({theme}) => theme.border};
     border-radius: 0.375rem;
     text-align: center;
 
     h1 {
-        color: ${({ theme }) => theme.text};
+        color: ${({theme}) => theme.text};
         margin-bottom: 1rem;
     }
 
     p {
-        color: ${({ theme }) => theme.text};
+        color: ${({theme}) => theme.text};
         margin-bottom: 1rem;
         line-height: 1.6;
     }
@@ -26,7 +26,7 @@ const HomePageContainer = styled.div`
 
 const ThemedHr = styled.hr`
     border: 0;
-    border-top: 1px solid ${({ theme }) => theme.border};
+    border-top: 1px solid ${({theme}) => theme.border};
     margin: 1.5rem 0;
 `;
 
@@ -50,7 +50,7 @@ interface HomePageProps {
     navigateTo: (page: PageName) => void;
 }
 
-const HomePage: React.FC<HomePageProps> = ({ navigateTo }) => {
+const HomePage: React.FC<HomePageProps> = ({navigateTo}) => {
     const handleGoToChat = () => {
         navigateTo('chat');
     };
@@ -62,7 +62,7 @@ const HomePage: React.FC<HomePageProps> = ({ navigateTo }) => {
                 This is a simple chat application template built with React, TypeScript,
                 and fully styled with Styled Components.
             </p>
-            <ThemedHr />
+            <ThemedHr/>
             <p>
                 Navigate to the chat page to start interacting with the AI.
             </p>

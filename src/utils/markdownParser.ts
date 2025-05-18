@@ -1,5 +1,5 @@
 // src/utils/markdownParser.ts
-import { marked, type MarkedOptions } from 'marked';
+import {marked, type MarkedOptions} from 'marked';
 import {type Logger, tryCatchSync} from '@rizean/poe-canvas-utils';
 
 // Configure marked options

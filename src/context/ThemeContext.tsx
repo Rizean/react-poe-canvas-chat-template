@@ -1,5 +1,5 @@
 // src/context/ThemeContext.tsx
-import React, { createContext, useState, type ReactNode, useContext, useMemo } from 'react';
+import React, {createContext, type ReactNode, useContext, useMemo, useState} from 'react';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -11,7 +11,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export const CustomThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const CustomThemeProvider: React.FC<{ children: ReactNode }> = ({children}) => {
     const [themeMode, setThemeModeState] = useState<ThemeMode>('light'); // Default to light
 
     // Removed useEffect related to localStorage
@@ -27,7 +27,7 @@ export const CustomThemeProvider: React.FC<{ children: ReactNode }> = ({ childre
         }
     };
 
-    const contextValue = useMemo(() => ({ themeMode, toggleTheme, setThemeMode }), [themeMode]);
+    const contextValue = useMemo(() => ({themeMode, toggleTheme, setThemeMode}), [themeMode]);
 
     return (
         <ThemeContext.Provider value={contextValue}>

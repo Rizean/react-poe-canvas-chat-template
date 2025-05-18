@@ -1,22 +1,17 @@
 // src/pages/MediaGeneratorPage.tsx
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import styled from 'styled-components';
-import { FaPaperPlane, FaSpinner, FaFileUpload } from 'react-icons/fa';
-import {
-    usePoeAiMediaGenerator,
-    type MediaRequestCallback,
-    type PoeMessageAttachment,
-} from '@rizean/poe-canvas-utils';
-import { useAppContext } from '../context/AppContext'; // For global error and logger access
+import {FaFileUpload, FaPaperPlane, FaSpinner} from 'react-icons/fa';
+import {type MediaRequestCallback, type PoeMessageAttachment, usePoeAiMediaGenerator} from '@rizean/poe-canvas-utils';
+import {useAppContext} from '../context/AppContext';
 
-const DEFAULT_MEDIA_MODEL = 'FLUX-schnell';
 
 const PageContainer = styled.div`
     display: flex;
     flex-direction: column;
     height: 100%;
     width: 100%;
-    background-color: ${({ theme }) => theme.body};
+    background-color: ${({theme}) => theme.body};
     min-width: 0;
 `;
 
@@ -24,19 +19,19 @@ const MediaDisplayArea = styled.div`
     flex-grow: 1;
     overflow-y: auto;
     padding: 1rem;
-    background-color: ${({ theme }) => theme.body};
+    background-color: ${({theme}) => theme.body};
     display: flex;
-    flex-wrap: wrap; /* Allow items to wrap */
-    gap: 1rem; /* Space between media items */
-    justify-content: center; /* Center items if they don't fill the row */
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
 `;
 
 const MediaItem = styled.div`
-    background-color: ${({ theme }) => theme.cardBg};
-    border: 1px solid ${({ theme }) => theme.border};
+    background-color: ${({theme}) => theme.cardBg};
+    border: 1px solid ${({theme}) => theme.border};
     border-radius: 0.25rem;
     padding: 0.5rem;
-    width: clamp(150px, 30%, 300px); /* Responsive width */
+    width: clamp(150px, 30%, 300px);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -50,7 +45,7 @@ const MediaItem = styled.div`
 
     p {
         font-size: 0.8rem;
-        color: ${({ theme }) => theme.secondary};
+        color: ${({theme}) => theme.secondary};
         margin-top: 0.5rem;
         text-align: center;
         word-break: break-all;
@@ -59,15 +54,15 @@ const MediaItem = styled.div`
 
 const InputArea = styled.div`
     padding: 1rem;
-    background-color: ${({ theme }) => theme.inputBg};
-    border-top: 1px solid ${({ theme }) => theme.border};
+    background-color: ${({theme}) => theme.inputBg};
+    border-top: 1px solid ${({theme}) => theme.border};
     flex-shrink: 0;
 `;
 
 const InputGroup = styled.div`
     display: flex;
-    flex-direction: column; /* Stack inputs vertically */
-    gap: 0.75rem; /* Space between input rows */
+    flex-direction: column;
+    gap: 0.75rem;
     width: 100%;
 `;
 
@@ -81,17 +76,18 @@ const TextInput = styled.input`
     flex-grow: 1;
     padding: 0.5rem 0.75rem;
     font-size: 1rem;
-    color: ${({ theme }) => theme.text};
-    background-color: ${({ theme }) => theme.inputBg};
-    border: 1px solid ${({ theme }) => theme.inputBorder};
+    color: ${({theme}) => theme.text};
+    background-color: ${({theme}) => theme.inputBg};
+    border: 1px solid ${({theme}) => theme.inputBorder};
     border-radius: 0.25rem;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:focus {
-        border-color: ${({ theme }) => theme.primary};
+        border-color: ${({theme}) => theme.primary};
         outline: 0;
-        box-shadow: 0 0 0 0.2rem ${({ theme }) => theme.primary}33;
+        box-shadow: 0 0 0 0.2rem ${({theme}) => theme.primary}33;
     }
+
     &:disabled {
         opacity: 0.7;
     }
@@ -105,9 +101,9 @@ const ModelInput = styled(TextInput)`
 const FileInputLabel = styled.label`
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
-    color: ${({ theme }) => theme.buttonPrimaryText};
-    background-color: ${({ theme }) => theme.secondary};
-    border: 1px solid ${({ theme }) => theme.secondary};
+    color: ${({theme}) => theme.buttonPrimaryText};
+    background-color: ${({theme}) => theme.secondary};
+    border: 1px solid ${({theme}) => theme.secondary};
     border-radius: 0.25rem;
     cursor: pointer;
     display: inline-flex;
@@ -116,17 +112,17 @@ const FileInputLabel = styled.label`
     transition: background-color 0.15s ease-in-out;
 
     &:hover {
-        background-color: ${({ theme }) => theme.secondary}E6;
+        background-color: ${({theme}) => theme.secondary}E6;
     }
 
     input[type="file"] {
-        display: none; /* Hide the actual file input */
+        display: none;
     }
 `;
 
 const FileInfo = styled.span`
     font-size: 0.85rem;
-    color: ${({ theme }) => theme.secondary};
+    color: ${({theme}) => theme.secondary};
     margin-left: 0.5rem;
 `;
 
@@ -134,20 +130,22 @@ const FileInfo = styled.span`
 const SendButton = styled.button`
     padding: 0.5rem 1rem;
     font-size: 1rem;
-    color: ${({ theme }) => theme.buttonPrimaryText};
-    background-color: ${({ theme }) => theme.buttonPrimaryBg};
-    border: 1px solid ${({ theme }) => theme.buttonPrimaryBorder};
+    color: ${({theme}) => theme.buttonPrimaryText};
+    background-color: ${({theme}) => theme.buttonPrimaryBg};
+    border: 1px solid ${({theme}) => theme.buttonPrimaryBorder};
     border-radius: 0.25rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
     &:hover:not(:disabled) {
-        background-color: ${({ theme }) => theme.primary}E6;
+        background-color: ${({theme}) => theme.primary}E6;
     }
+
     &:disabled {
         opacity: 0.65;
     }
+
     svg.fa-spin {
         animation: spin 1s linear infinite;
     }
@@ -163,15 +161,17 @@ const AlertContainer = styled.div`
 `;
 
 const MediaGeneratorPage: React.FC = () => {
-    const { logger: globalLogger, error: globalError, clearError: clearGlobalError } = useAppContext();
+    const {
+        logger,
+        error: globalError,
+        clearError: clearGlobalError,
+        selectedMediaGeneratorModel, // Use from context
+        setSelectedMediaGeneratorModel, // Use from context
+    } = useAppContext();
 
-    const [sendMediaPrompt] = usePoeAiMediaGenerator({
-        logger: globalLogger,
-        simulation: !window.Poe,
-    });
+    const [sendMediaPrompt] = usePoeAiMediaGenerator({logger, simulation: !window.Poe});
 
     const [inputValue, setInputValue] = useState('');
-    const [modelName, setModelName] = useState(DEFAULT_MEDIA_MODEL);
     const [isGenerating, setIsGenerating] = useState(false);
     const [attachments, setAttachments] = useState<PoeMessageAttachment[]>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -188,31 +188,31 @@ const MediaGeneratorPage: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             setInputFiles(Array.from(event.target.files));
-            globalLogger.info(`${event.target.files.length} file(s) selected.`);
+            logger.info(`${event.target.files.length} file(s) selected.`);
         }
     };
 
     const handleSend = useCallback(() => {
-        if (!inputValue.trim() || !modelName.trim()) {
+        if (!inputValue.trim() || !selectedMediaGeneratorModel.trim()) { // Use context model
             setErrorMessage("Prompt and AI Model name cannot be empty.");
             return;
         }
-        globalLogger.info(`Sending media prompt to ${modelName} with ${inputFiles.length} files:`, inputValue);
+        logger.info(`Sending media prompt to ${selectedMediaGeneratorModel} with ${inputFiles.length} files:`, inputValue); // Use context model
         setIsGenerating(true);
         setAttachments([]);
         setErrorMessage(null);
         if (globalError) clearGlobalError();
 
-        const prompt = `${modelName.startsWith('@') ? '' : '@'}${modelName} ${inputValue}`;
+        const prompt = `${selectedMediaGeneratorModel.startsWith('@') ? '' : '@'}${selectedMediaGeneratorModel} ${inputValue}`; // Use context model
 
         const callback: MediaRequestCallback = (state) => {
             setIsGenerating(state.generating);
 
             if (state.error) {
-                globalLogger.error("Media generation error:", state.error);
+                logger.error("Media generation error:", state.error);
                 setErrorMessage(state.error);
             } else {
-                setErrorMessage(null); // Clear error on non-error state
+                setErrorMessage(null);
             }
 
             if (state.mediaAttachments.length > 0) {
@@ -220,15 +220,13 @@ const MediaGeneratorPage: React.FC = () => {
             }
 
             if (!state.generating) {
-                globalLogger.info("Media generation complete.");
+                logger.info("Media generation complete.");
             }
         };
 
-        sendMediaPrompt(prompt, callback, {
-            attachments: inputFiles,
-        });
+        sendMediaPrompt(prompt, callback, {attachments: inputFiles});
 
-    }, [inputValue, modelName, sendMediaPrompt, inputFiles, globalLogger, globalError, clearGlobalError]);
+    }, [inputValue, selectedMediaGeneratorModel, sendMediaPrompt, inputFiles, logger, globalError, clearGlobalError]); // Use context model
 
     return (
         <PageContainer>
@@ -238,9 +236,9 @@ const MediaGeneratorPage: React.FC = () => {
                 {isGenerating && attachments.length === 0 && <p>Generating media...</p>}
                 {attachments.map(att => (
                     <MediaItem key={att.attachmentId}>
-                        {att.mimeType.startsWith('image/') && <img src={att.url} alt={att.name} />}
-                        {att.mimeType.startsWith('video/') && <video src={att.url} controls />}
-                        {att.mimeType.startsWith('audio/') && <audio src={att.url} controls />}
+                        {att.mimeType.startsWith('image/') && <img src={att.url} alt={att.name}/>}
+                        {att.mimeType.startsWith('video/') && <video src={att.url} controls/>}
+                        {att.mimeType.startsWith('audio/') && <audio src={att.url} controls/>}
                         <p>{att.name} ({att.mimeType})</p>
                     </MediaItem>
                 ))}
@@ -252,8 +250,8 @@ const MediaGeneratorPage: React.FC = () => {
                         <ModelInput
                             type="text"
                             placeholder="AI Model (e.g., FLUX-schnell)"
-                            value={modelName}
-                            onChange={(e) => setModelName(e.target.value)}
+                            value={selectedMediaGeneratorModel} // Use context model
+                            onChange={(e) => setSelectedMediaGeneratorModel(e.target.value)} // Use context setter
                             disabled={isGenerating}
                             aria-label="AI Model for Media Generation"
                         />
@@ -266,14 +264,15 @@ const MediaGeneratorPage: React.FC = () => {
                             disabled={isGenerating}
                             aria-label="Media generation prompt input"
                         />
-                        <SendButton onClick={handleSend} disabled={isGenerating || !inputValue.trim() || !modelName.trim()}>
-                            {isGenerating ? <FaSpinner className="fa-spin" /> : <FaPaperPlane />}
+                        <SendButton onClick={handleSend}
+                                    disabled={isGenerating || !inputValue.trim() || !selectedMediaGeneratorModel.trim()}> {/* Use context model */}
+                            {isGenerating ? <FaSpinner className="fa-spin"/> : <FaPaperPlane/>}
                         </SendButton>
                     </PromptRow>
                     <PromptRow>
                         <FileInputLabel htmlFor="file-upload">
-                            <FaFileUpload /> Attach Files ({inputFiles.length})
-                            <input id="file-upload" type="file" multiple onChange={handleFileChange} disabled={isGenerating} />
+                            <FaFileUpload/> Attach Files ({inputFiles.length})
+                            <input id="file-upload" type="file" multiple onChange={handleFileChange} disabled={isGenerating}/>
                         </FileInputLabel>
                         {inputFiles.length > 0 && (
                             <FileInfo>

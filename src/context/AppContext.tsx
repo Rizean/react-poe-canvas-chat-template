@@ -5,17 +5,17 @@ import type {AppError, Message} from '../types/app';
 import {constructExampleChatPrompt} from '../prompts/exampleChatPrompt';
 import {
     applyGeminiThinkingFilter,
-    type RequestState as PoeRequestState,
-    useLogger,
-    usePoeAi,
-    saveDataToFile,
     loadDataFromFile,
-    type VersionedData,
+    type RequestState as PoeRequestState,
+    type Result,
+    saveDataToFile,
     type StorageLoadOptions,
     tryCatchSync,
-    type Result
+    useLogger,
+    usePoeAi,
+    type VersionedData
 } from '@rizean/poe-canvas-utils';
-import { useCustomTheme } from './ThemeContext';
+import {useCustomTheme} from './ThemeContext';
 
 // --- App Settings Configuration ---
 const DEFAULT_CHAT_MODEL_NAME = 'Gemini-2.5-Pro-Exp'; // Renamed for clarity
@@ -79,7 +79,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
 
     const [filterGeminiThinking, setFilterGeminiThinking] = useState<boolean>(false);
 
-    const { themeMode, setThemeMode } = useCustomTheme();
+    const {themeMode, setThemeMode} = useCustomTheme();
     const {logger: appLogger} = useLogger(import.meta.env.VITE_LOG_LEVEL || 'info');
 
     const [sendToPoe] = usePoeAi({logger: appLogger, simulation: !window.Poe});
@@ -143,7 +143,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
             appLogger.info('AppContext: App settings saved successfully.');
         } else {
             appLogger.error('AppContext: Failed to save app settings.', saveError);
-            setError({ message: 'Failed to save settings.', details: saveError?.message });
+            setError({message: 'Failed to save settings.', details: saveError?.message});
         }
     }, [themeMode, filterGeminiThinking, selectedChatModel, selectedTextGeneratorModel, selectedMediaGeneratorModel, appLogger]);
 
@@ -184,7 +184,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({children}) => {
 
         if (loadError) {
             appLogger.error('AppContext: Failed to load app settings.', loadError);
-            setError({ message: 'Failed to load settings.', details: loadError.message });
+            setError({message: 'Failed to load settings.', details: loadError.message});
         } else if (loadedSettings) {
             appLogger.info('AppContext: App settings loaded successfully.', loadedSettings);
             setThemeMode(loadedSettings.themeMode);

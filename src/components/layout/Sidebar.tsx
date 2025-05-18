@@ -1,7 +1,7 @@
 // src/components/layout/Sidebar.tsx
-import styled, { css } from 'styled-components';
-import { FaHome, FaRocketchat, FaEdit, FaImage } from 'react-icons/fa'; // Added FaEdit, FaImage
-import type { PageName } from '../../App';
+import styled, {css} from 'styled-components';
+import {FaEdit, FaHome, FaImage, FaRocketchat} from 'react-icons/fa'; // Added FaEdit, FaImage
+import type {PageName} from '../../App';
 
 interface SidebarProps {
     isOpen: boolean;
@@ -50,7 +50,7 @@ const StyledNavButton = styled.button<StyledNavButtonProps>`
     width: 100%;
     text-align: left;
 
-    color: ${({ theme }) => theme.sidebarText};
+    color: ${({theme}) => theme.sidebarText};
     padding: 0.75rem 1rem;
     border-radius: 0.25rem;
     display: flex;
@@ -60,34 +60,33 @@ const StyledNavButton = styled.button<StyledNavButtonProps>`
     margin-bottom: 0.25rem;
 
     &:hover {
-        background-color: ${({ theme }) => theme.sidebarLinkHoverBg};
-        color: ${({ theme }) => theme.sidebarText};
+        background-color: ${({theme}) => theme.sidebarLinkHoverBg};
+        color: ${({theme}) => theme.sidebarText};
         text-decoration: none;
     }
 
-    ${({ $isActive, theme }) =>
+    ${({$isActive, theme}) =>
             $isActive &&
             css`
                 background-color: ${theme.sidebarLinkActiveBg};
                 color: ${theme.sidebarLinkActiveText};
                 font-weight: bold;
             `}
-
     svg {
         flex-shrink: 0;
         font-size: 18px;
-        margin-right: ${({ $isSidebarOpen }) => ($isSidebarOpen ? '0.75rem' : '0')};
+        margin-right: ${({$isSidebarOpen}) => ($isSidebarOpen ? '0.75rem' : '0')};
         transition: margin-right 0.3s ease;
     }
 
     span {
-        opacity: ${({ $isSidebarOpen }) => ($isSidebarOpen ? 1 : 0)};
-        visibility: ${({ $isSidebarOpen }) => ($isSidebarOpen ? 'visible' : 'hidden')};
+        opacity: ${({$isSidebarOpen}) => ($isSidebarOpen ? 1 : 0)};
+        visibility: ${({$isSidebarOpen}) => ($isSidebarOpen ? 'visible' : 'hidden')};
         transition: opacity 0.2s ease, visibility 0.2s ease;
-        display: ${({ $isSidebarOpen }) => ($isSidebarOpen ? 'inline' : 'none')};
+        display: ${({$isSidebarOpen}) => ($isSidebarOpen ? 'inline' : 'none')};
     }
 
-    ${({ $isSidebarOpen }) =>
+    ${({$isSidebarOpen}) =>
             !$isSidebarOpen &&
             css`
                 justify-content: center;
@@ -95,7 +94,7 @@ const StyledNavButton = styled.button<StyledNavButtonProps>`
 `;
 
 
-function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProps) {
+function Sidebar({isOpen, toggleSidebar, navigateTo, currentPage}: SidebarProps) {
     const handleLinkClick = (page: PageName) => {
         navigateTo(page);
         if (isOpen) { // Only toggle if it's an overlay-style sidebar
@@ -114,7 +113,7 @@ function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProp
                     $isSidebarOpen={showText}
                     aria-label="Go to Home page"
                 >
-                    <FaHome />
+                    <FaHome/>
                     <span>Home</span>
                 </StyledNavButton>
                 <StyledNavButton
@@ -123,7 +122,7 @@ function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProp
                     $isSidebarOpen={showText}
                     aria-label="Go to Basic Chat page"
                 >
-                    <FaRocketchat />
+                    <FaRocketchat/>
                     <span>Basic Chat</span>
                 </StyledNavButton>
                 <StyledNavButton
@@ -132,7 +131,7 @@ function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProp
                     $isSidebarOpen={showText}
                     aria-label="Go to Text Generator Chat"
                 >
-                    <FaEdit />
+                    <FaEdit/>
                     <span>Text Generator</span>
                 </StyledNavButton>
                 <StyledNavButton
@@ -141,7 +140,7 @@ function Sidebar({ isOpen, toggleSidebar, navigateTo, currentPage }: SidebarProp
                     $isSidebarOpen={showText}
                     aria-label="Go to Media Generator Chat"
                 >
-                    <FaImage />
+                    <FaImage/>
                     <span>Media Generator</span>
                 </StyledNavButton>
             </NavList>

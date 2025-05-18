@@ -1,5 +1,5 @@
 // src/App.tsx
-import { useState, useCallback } from 'react';
+import {useCallback, useState} from 'react';
 import styled from 'styled-components';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
@@ -8,7 +8,7 @@ import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
 import TextGeneratorPage from './pages/TextGeneratorPage';
 import MediaGeneratorPage from './pages/MediaGeneratorPage';
-import { useAppContext } from './context/AppContext';
+import {useAppContext} from './context/AppContext';
 
 // Define Page types for navigation state
 export type PageName = 'home' | 'chat' | 'textGenerator' | 'mediaGenerator'; // Added new page names
@@ -19,7 +19,7 @@ const AppContainer = styled.div`
     flex-grow: 1;
     overflow: hidden;
     height: 100%; /* Ensure it takes full height from #root */
-    background-color: ${({ theme }) => theme.body};
+    background-color: ${({theme}) => theme.body};
 `;
 
 const AppWrapper = styled.div`
@@ -27,7 +27,7 @@ const AppWrapper = styled.div`
     flex-grow: 1;
     position: relative;
     overflow: hidden;
-    height: calc(100% - ${({ theme }) => theme.headerHeight});
+    height: calc(100% - ${({theme}) => theme.headerHeight});
 `;
 
 const ContentWrapper = styled.main`
@@ -35,7 +35,7 @@ const ContentWrapper = styled.main`
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    background-color: ${({ theme }) => theme.body};
+    background-color: ${({theme}) => theme.body};
     min-width: 0;
 `;
 
@@ -48,11 +48,11 @@ const MainContentArea = styled.div`
 
 const SidebarOverlay = styled.div`
     position: fixed;
-    top: ${({ theme }) => theme.headerHeight};
+    top: ${({theme}) => theme.headerHeight};
     left: 0;
     width: 100%;
-    height: calc(100% - ${({ theme }) => theme.headerHeight});
-    background-color: rgba(0,0,0,0.5);
+    height: calc(100% - ${({theme}) => theme.headerHeight});
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1039;
     opacity: 0;
     visibility: hidden;
@@ -67,7 +67,7 @@ const SidebarOverlay = styled.div`
 function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [currentPage, setCurrentPage] = useState<PageName>('home');
-    const { logger } = useAppContext();
+    const {logger} = useAppContext();
 
 
     const toggleSidebar = () => {
@@ -83,26 +83,26 @@ function App() {
     const renderPage = () => {
         switch (currentPage) {
             case 'home':
-                return <HomePage navigateTo={navigateTo} />;
+                return <HomePage navigateTo={navigateTo}/>;
             case 'chat':
-                return <ChatPage />;
+                return <ChatPage/>;
             case 'textGenerator': // Added
-                return <TextGeneratorPage />;
+                return <TextGeneratorPage/>;
             case 'mediaGenerator': // Added
-                return <MediaGeneratorPage />;
+                return <MediaGeneratorPage/>;
             default:
                 logger.warn(`App: Unknown page "${currentPage}", defaulting to home.`);
-                return <HomePage navigateTo={navigateTo} />;
+                return <HomePage navigateTo={navigateTo}/>;
         }
     };
 
     return (
         <AppContainer>
-            <Header toggleSidebar={toggleSidebar} navigateTo={navigateTo} />
+            <Header toggleSidebar={toggleSidebar} navigateTo={navigateTo}/>
             <AppWrapper>
-                <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} navigateTo={navigateTo} currentPage={currentPage} />
+                <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} navigateTo={navigateTo} currentPage={currentPage}/>
                 {isSidebarOpen && (
-                    <SidebarOverlay className="active" onClick={toggleSidebar} />
+                    <SidebarOverlay className="active" onClick={toggleSidebar}/>
                 )}
                 <ContentWrapper>
                     <MainContentArea>
@@ -110,7 +110,7 @@ function App() {
                     </MainContentArea>
                 </ContentWrapper>
             </AppWrapper>
-            <Footer />
+            <Footer/>
         </AppContainer>
     );
 }

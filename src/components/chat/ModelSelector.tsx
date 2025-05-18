@@ -1,12 +1,12 @@
 // src/components/chat/ModelSelector.tsx
 import React from 'react';
 import styled from 'styled-components';
-import { useAppContext } from '../../context/AppContext';
+import {useAppContext} from '../../context/AppContext';
 
 const SelectorBar = styled.div`
     padding: 0.75rem 1rem;
-    background-color: ${({ theme }) => theme.modelSelectorBg};
-    border-bottom: 1px solid ${({ theme }) => theme.modelSelectorBorder};
+    background-color: ${({theme}) => theme.modelSelectorBg};
+    border-bottom: 1px solid ${({theme}) => theme.modelSelectorBorder};
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -17,7 +17,7 @@ const SelectorLabel = styled.label`
     margin-right: 0.5rem;
     margin-bottom: 0;
     font-weight: bold;
-    color: ${({ theme }) => theme.modelSelectorText};
+    color: ${({theme}) => theme.modelSelectorText};
     white-space: nowrap;
 `;
 
@@ -25,9 +25,9 @@ const StyledInput = styled.input`
     padding: 0.375rem 0.75rem;
     font-size: 0.9rem;
     line-height: 1.5;
-    color: ${({ theme }) => theme.modelSelectorText};
-    background-color: ${({ theme }) => theme.modelSelectorBg};
-    border: 1px solid ${({ theme }) => theme.modelSelectorBorder};
+    color: ${({theme}) => theme.modelSelectorText};
+    background-color: ${({theme}) => theme.modelSelectorBg};
+    border: 1px solid ${({theme}) => theme.modelSelectorBorder};
     border-radius: 0.25rem;
     flex-grow: 1;
     min-width: 150px;
@@ -35,9 +35,9 @@ const StyledInput = styled.input`
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
     &:focus {
-        border-color: ${({ theme }) => theme.primary};
+        border-color: ${({theme}) => theme.primary};
         outline: 0;
-        box-shadow: 0 0 0 0.2rem ${({ theme }) => theme.primary}33;
+        box-shadow: 0 0 0 0.2rem ${({theme}) => theme.primary}33;
     }
 
     @media (max-width: 768px) {
@@ -67,7 +67,7 @@ const StyledCheckbox = styled.input`
 `;
 
 const CheckboxLabel = styled.label`
-    color: ${({ theme }) => theme.modelSelectorText};
+    color: ${({theme}) => theme.modelSelectorText};
     font-size: 0.9rem;
     margin-bottom: 0;
     cursor: pointer;
